@@ -10,7 +10,7 @@ A simple Employee Management CRUD (Create, Read, Update, Delete) application tha
 
 **Usage**
 
-1.Start the application by running npm start.
+1.Start the application by running npm run dev.
 
 2.Navigate to http://localhost:8080 in your browser.
 
