@@ -129,6 +129,8 @@
 </template>
 
 <script lang="ts">
+import { mapState } from "vuex";
+// import { state } from '~/store/employeeDetails';
 declare interface EmployeeDetail {
   firstName: string;
   lastName: string;
@@ -168,6 +170,33 @@ export default {
   },
   methods: {
     /**
+     * Method to enable edit for the index in table row
+     *
+     * @param {number} index
+     *
+     */
+    enableToEdit(index?: number): any {
+      const OThis: any = this;
+      OThis.currentIndex = index;
+      OThis.enableEdit = !OThis.enableEdit;
+    },
+
+    /**
+     * Method to fetch employee details from api
+     *
+     * @param {*} params
+     */
+    async getEmployeeDetails(): Promise<any> {
+      const OThis: any = this;
+      try {
+        const response = await OThis.$axios.get("/employeedetails");
+        OThis.empDetails = response.data;
+      } catch (err) {
+        console.log(err);
+      }
+    },
+
+    /**
      * Method to add employee details
      *
      * @param {*} params
@@ -181,40 +210,10 @@ export default {
         email: OThis.email,
         empId: OThis.empId,
       };
-      try {
-        await OThis.$axios.post("/employeedetails", addAEmployee);
-      } catch (err) {
-        console.log(err);
-      }
+      OThis.$store.commit("employeeDetails/setNewEmployeeDetail", addAEmployee);
+      await OThis.$store.dispatch("employeeDetails/addANewEmployee");
       OThis.getEmployeeDetails();
       refForm.reset();
-    },
-    /**
-     * Method to delete an employee detail
-     *
-     * @param {*} params
-     */
-    async deleteEmployee(index: number, emp: EmployeeDetail): Promise<any> {
-      const id = emp._id;
-      const OThis: any = this;
-      try {
-        await OThis.$axios.delete(`/employeedetails/${id}`);
-      } catch (err) {
-        console.log(err);
-      }
-      OThis.getEmployeeDetails();
-    },
-
-    /**
-     * Method to enable edit for the index in table row
-     *
-     * @param {number} index
-     * 
-     */
-    enableToEdit(index?: number): any {
-      const OThis: any = this;
-      OThis.currentIndex = index;
-      OThis.enableEdit = !OThis.enableEdit;
     },
 
     /**
@@ -225,33 +224,29 @@ export default {
      */
     async updateEmpDetails(emp: EmployeeDetail, index: number): Promise<any> {
       const OThis: any = this;
-      const id = emp._id;
-      try {
-        await OThis.$axios.patch(`/employeedetails/${id}`, emp);
-      } catch (err) {
-        console.log(err);
-      }
+      OThis.$store.commit("employeeDetails/updateAnExisitingEmployee", emp);
+      await OThis.$store.dispatch(
+        "employeeDetails/updateAnExisitingEmployeeDetail"
+      );
       OThis.getEmployeeDetails();
       OThis.enableToEdit();
     },
 
     /**
-     * Method to fetch employee details from api
+     * Method to delete an employee detail
      *
-     * @param {*} params
+     * @param {number} index
+     * @param {EmployeeDetail} emp
      */
-    async getEmployeeDetails(): Promise<any> {
+    async deleteEmployee(index: number, emp: EmployeeDetail): Promise<any> {
       const OThis: any = this;
-      try {
-        const response = await OThis.$axios.get("/employeedetails");
-        OThis.empDetails = response.data;
-        console.log(OThis.empDetails);
-      } catch (err) {
-        console.log(err);
-      }
+      OThis.$store.commit("employeeDetails/deleteAnExistingEmployee", emp);
+      await OThis.$store.dispatch("employeeDetails/deleteAnEmployeeDetail");
+      OThis.getEmployeeDetails();
     },
   },
   computed: {
+    ...mapState(["employeeDetails"]),
     /**
      * Method to disable submit button
      *
